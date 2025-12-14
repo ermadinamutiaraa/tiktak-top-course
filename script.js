@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Tik Tak Top Course Script Loaded');
     
-    // ==================== GOOGLE SHEETS CONFIGURATION ====================
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzUl2rOuIex_NcNdxicBid9BBKTxq3QWJCxDFUAp_tP1KVdXzdwgbXg932PJ8Qqj-Vq/exec";
+    // ==================== GOOGLE SHEETS CONFIG ====================
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFaKDA3MIwQwiEPoeNYqYG9O_bWJv2hmyr3QOUogqVFu1D6X_dNMfTXj_vZE6q7I-F/exec";
     
     // ==================== MOBILE MENU TOGGLE ====================
     const hamburger = document.getElementById('hamburger');
@@ -91,19 +91,15 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             const courseName = this.getAttribute('data-course-name');
             const coursePrice = this.getAttribute('data-price');
-            const courseId = this.getAttribute('data-course');
             
-            // Auto-fill program selection in registration form
+            // Auto-fill program in registration form
             const programSelect = document.getElementById('anggotaProgram');
             if (programSelect) {
-                // Cari option yang sesuai
-                const optionToSelect = Array.from(programSelect.options).find(option => 
-                    option.text.includes(courseName) || 
-                    option.value.includes(courseId)
-                );
-                
-                if (optionToSelect) {
-                    optionToSelect.selected = true;
+                for (let option of programSelect.options) {
+                    if (option.text.includes(courseName)) {
+                        option.selected = true;
+                        break;
+                    }
                 }
             }
             
@@ -125,27 +121,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // ==================== FORM RESPONSE MESSAGE ====================
+    // ==================== FORM PENDAFTARAN ANGGOTA ====================
+    const registrationForm = document.getElementById('registrationForm');
+    const responseMessage = document.getElementById('responseMessage');
+    
     function showResponseMessage(message, type) {
-        const responseMessage = document.getElementById('responseMessage');
         if (responseMessage) {
             responseMessage.innerHTML = message;
             responseMessage.className = `response-message ${type}`;
             responseMessage.style.display = 'block';
             responseMessage.setAttribute('role', 'alert');
             
-            // Auto hide after 7 seconds (kecuali success)
-            if (type !== 'success') {
-                setTimeout(() => {
-                    if (responseMessage.style.display === 'block') {
-                        responseMessage.style.display = 'none';
-                    }
-                }, 7000);
-            }
+            // Auto hide after 7 seconds
+            setTimeout(() => {
+                if (responseMessage.style.display === 'block') {
+                    responseMessage.style.display = 'none';
+                }
+            }, 7000);
         }
     }
-    
-    // ==================== FORM VALIDATION FUNCTIONS ====================
     
     // Validasi NIK
     function validateNIK(nik) {
@@ -181,27 +175,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return { valid: true, phone: cleanPhone };
     }
     
-    // Format nomor telepon untuk WhatsApp
+    // Format nomor untuk WhatsApp
     function formatPhoneNumber(phone) {
         const clean = phone.replace(/\D/g, '');
-        
-        if (clean.startsWith('0')) {
-            return '62' + clean.substring(1);
-        }
-        
-        if (clean.startsWith('62')) {
-            return clean;
-        }
-        
-        if (clean.startsWith('8')) {
-            return '62' + clean;
-        }
-        
+        if (clean.startsWith('0')) return '62' + clean.substring(1);
+        if (clean.startsWith('62')) return clean;
+        if (clean.startsWith('8')) return '62' + clean;
         return clean;
     }
-    
-    // ==================== GOOGLE SHEETS FORM SUBMISSION ====================
-    const registrationForm = document.getElementById('registrationForm');
     
     if (registrationForm) {
         registrationForm.addEventListener('submit', async function(e) {
@@ -215,10 +196,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get form values
             const formData = new FormData(this);
             const data = {
-                nama: formData.get('anggotaNama').trim(),
+                nama: formData.get('anggotaNama'),
                 program: formData.get('anggotaProgram'),
                 nik: formData.get('anggotaNIK'),
-                alamat: formData.get('anggotaAlamat').trim(),
+                alamat: formData.get('anggotaAlamat'),
                 whatsapp: formData.get('anggotaWhatsApp'),
                 terms: document.getElementById('anggotaTerms')?.checked || false
             };
@@ -226,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate form
             const errors = [];
             
-            if (!data.nama) {
+            if (!data.nama?.trim()) {
                 errors.push('Nama lengkap harus diisi');
                 document.getElementById('anggotaNama').classList.add('error');
             } else if (data.nama.length < 3) {
@@ -245,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('anggotaNIK').classList.add('error');
             }
             
-            if (!data.alamat) {
+            if (!data.alamat?.trim()) {
                 errors.push('Alamat lengkap harus diisi');
                 document.getElementById('anggotaAlamat').classList.add('error');
             } else if (data.alamat.length < 10) {
@@ -280,150 +261,115 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show loading state
             const submitBtn = this.querySelector('.submit-btn');
-            const resetBtn = this.querySelector('.reset-btn');
-            let originalBtnText = '';
-            
             if (submitBtn) {
-                originalBtnText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim ke Server...';
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim ke Google Sheets...';
                 submitBtn.disabled = true;
-                if (resetBtn) resetBtn.disabled = true;
-            }
-            
-            // Prepare data for Google Sheets
-            const submissionData = {
-                nama: data.nama,
-                program: document.getElementById('anggotaProgram').options[document.getElementById('anggotaProgram').selectedIndex].text,
-                program_code: data.program,
-                nik: nikValidation.nik,
-                alamat: data.alamat,
-                whatsapp: formatPhoneNumber(phoneValidation.phone),
-                timestamp: new Date().toLocaleString('id-ID')
-            };
-            
-            console.log('📤 Data yang dikirim ke Google Sheets:', submissionData);
-            
-            try {
-                // Kirim data ke Google Apps Script
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(submissionData)
-                });
                 
-                console.log('📥 Response status:', response.status);
+                // Prepare data for Google Sheets
+                const programText = document.getElementById('anggotaProgram').options[document.getElementById('anggotaProgram').selectedIndex].text;
+                const submissionData = {
+                    nama: data.nama.trim(),
+                    program: programText,
+                    nik: nikValidation.nik,
+                    alamat: data.alamat.trim(),
+                    whatsapp: formatPhoneNumber(phoneValidation.phone)
+                };
                 
-                // Handle response
-                if (response.ok) {
+                console.log('📤 Sending to Google Sheets:', submissionData);
+                
+                try {
+                    // Send to Google Sheets via Apps Script
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(submissionData)
+                    });
+                    
+                    console.log('📥 Response status:', response.status);
+                    
+                    let result;
                     try {
-                        const result = await response.json();
+                        result = await response.json();
+                    } catch {
+                        result = { success: true }; // Jika response bukan JSON
+                    }
+                    
+                    if (result && (result.success || result.status === "success")) {
+                        // SUCCESS
+                        const memberId = 'TTTC-' + Math.random().toString(36).substr(2, 8).toUpperCase();
                         
-                        if (result && result.success) {
-                            // SUCCESS - Data saved to Google Sheets
-                            const memberId = generateMemberId();
-                            
-                            showResponseMessage(
-                                `✅ <strong>Pendaftaran Berhasil!</strong><br>
-                                Selamat <strong>${data.nama}</strong>, Anda telah terdaftar sebagai anggota Tik Tak Top Course.<br>
-                                <strong>ID Anggota:</strong> ${memberId}<br>
-                                <strong>Kelas:</strong> ${submissionData.program}<br>
-                                <strong>Timestamp:</strong> ${submissionData.timestamp}<br><br>
-                                Konfirmasi pendaftaran akan dikirim ke WhatsApp Anda dalam 1x24 jam.`,
-                                'success'
-                            );
-                            
-                            // Simpan ke localStorage sebagai backup
-                            saveToLocalStorage({
-                                ...submissionData,
-                                memberId: memberId,
-                                localSaveTime: new Date().toISOString()
-                            });
-                            
-                            // Reset form setelah 3 detik
-                            setTimeout(() => {
-                                registrationForm.reset();
-                                
-                                // Tampilkan tombol WhatsApp
-                                showWhatsAppButton(submissionData, memberId);
-                                
-                                // Reset button state
-                                if (submitBtn) {
-                                    submitBtn.innerHTML = originalBtnText;
-                                    submitBtn.disabled = false;
-                                    if (resetBtn) resetBtn.disabled = false;
-                                }
-                            }, 3000);
-                            
-                        } else {
-                            // ERROR dari server
-                            throw new Error(result.error || 'Unknown server error');
-                        }
-                    } catch (jsonError) {
-                        // Jika response bukan JSON (CORS issue), anggap sukses
-                        console.log('⚠️ Response bukan JSON, data mungkin sudah terkirim');
-                        
-                        const memberId = generateMemberId();
                         showResponseMessage(
-                            `✅ <strong>Pendaftaran Diterima!</strong><br>
-                            Data Anda telah dikirim. ID: ${memberId}<br>
-                            Jika tidak ada konfirmasi dalam 24 jam, hubungi admin.`,
+                            `✅ <strong>Pendaftaran Berhasil!</strong><br>
+                            Selamat <strong>${data.nama}</strong>, Anda telah terdaftar sebagai anggota Tik Tak Top Course.<br>
+                            <strong>ID Anggota:</strong> ${memberId}<br>
+                            <strong>Kelas:</strong> ${programText}<br><br>
+                            Data telah disimpan ke Google Sheets. Konfirmasi akan dikirim ke WhatsApp ${data.whatsapp} dalam 1x24 jam.`,
                             'success'
                         );
                         
-                        saveToLocalStorage({
-                            ...submissionData,
+                        // Log to console
+                        console.log('✅ Data saved to Google Sheets:', {
                             memberId: memberId,
-                            localSaveTime: new Date().toISOString()
+                            ...submissionData,
+                            timestamp: new Date().toISOString()
                         });
                         
-                        setTimeout(() => {
-                            registrationForm.reset();
-                            if (submitBtn) {
-                                submitBtn.innerHTML = originalBtnText;
-                                submitBtn.disabled = false;
-                                if (resetBtn) resetBtn.disabled = false;
-                            }
-                        }, 3000);
+                    } else {
+                        // ERROR from server
+                        showResponseMessage(
+                            `❌ <strong>Gagal menyimpan data.</strong><br>
+                            Error: ${result.error || 'Unknown error'}<br>
+                            Silakan coba lagi atau hubungi admin.`,
+                            'error'
+                        );
                     }
-                } else {
+                    
+                } catch (error) {
                     // Network error
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    console.error('🌐 Network error:', error);
+                    
+                    // Fallback: Save to localStorage
+                    const memberId = 'TTTC-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+                    const backupData = {
+                        memberId: memberId,
+                        nama: data.nama.trim(),
+                        program: programText,
+                        nik: nikValidation.nik,
+                        alamat: data.alamat.trim(),
+                        whatsapp: formatPhoneNumber(phoneValidation.phone),
+                        timestamp: new Date().toISOString(),
+                        error: error.message
+                    };
+                    
+                    // Save to localStorage
+                    try {
+                        const existing = JSON.parse(localStorage.getItem('tiktaktop_backup') || '[]');
+                        existing.push(backupData);
+                        localStorage.setItem('tiktaktop_backup', JSON.stringify(existing));
+                    } catch (e) {
+                        console.log('LocalStorage error:', e);
+                    }
+                    
+                    showResponseMessage(
+                        `⚠️ <strong>Data disimpan sementara.</strong><br>
+                        Koneksi bermasalah, tetapi data sudah disimpan lokal.<br>
+                        <strong>ID Anggota:</strong> ${memberId}<br>
+                        Hubungi admin dengan ID tersebut untuk konfirmasi.`,
+                        'warning'
+                    );
+                    
+                    console.log('💾 Backup saved to localStorage:', backupData);
                 }
                 
-            } catch (error) {
-                // Network error atau CORS error
-                console.error('🌐 Error submitting form:', error);
-                
-                // Simpan ke localStorage sebagai fallback
-                const memberId = generateMemberId();
-                saveToLocalStorage({
-                    ...submissionData,
-                    memberId: memberId,
-                    localSaveTime: new Date().toISOString(),
-                    error: error.message
-                });
-                
-                showResponseMessage(
-                    `⚠️ <strong>Data disimpan sementara.</strong><br>
-                    Koneksi bermasalah, tetapi data sudah disimpan lokal.<br>
-                    <strong>ID Anggota:</strong> ${memberId}<br>
-                    Silakan hubungi admin dengan ID tersebut untuk konfirmasi manual.`,
-                    'warning'
-                );
-                
-                // Reset button state
-                if (submitBtn) {
-                    submitBtn.innerHTML = originalBtnText;
-                    submitBtn.disabled = false;
-                    if (resetBtn) resetBtn.disabled = false;
-                }
-                
-                // Reset form setelah 5 detik
+                // Reset form setelah 3 detik
                 setTimeout(() => {
                     registrationForm.reset();
-                }, 5000);
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 3000);
             }
         });
         
@@ -454,146 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 input.classList.remove('error', 'valid');
             });
         });
-        
-        // Form char counter for alamat
-        const alamatTextarea = document.getElementById('anggotaAlamat');
-        if (alamatTextarea) {
-            const charCounter = document.createElement('div');
-            charCounter.className = 'char-counter';
-            charCounter.textContent = '0/500 karakter';
-            alamatTextarea.parentNode.appendChild(charCounter);
-            
-            alamatTextarea.addEventListener('input', function() {
-                const length = this.value.length;
-                charCounter.textContent = `${length}/500 karakter`;
-                
-                if (length > 450) {
-                    charCounter.classList.add('warning');
-                } else {
-                    charCounter.classList.remove('warning');
-                }
-                
-                if (length > 500) {
-                    this.value = this.value.substring(0, 500);
-                    charCounter.textContent = '500/500 karakter (maksimum)';
-                }
-            });
-        }
     }
-    
-    // ==================== HELPER FUNCTIONS ====================
-    
-    // Generate Member ID
-    function generateMemberId() {
-        const timestamp = Date.now().toString(36);
-        const random = Math.random().toString(36).substr(2, 5);
-        return `TTTC-${timestamp}-${random}`.toUpperCase();
-    }
-    
-    // Save to localStorage as backup
-    function saveToLocalStorage(data) {
-        try {
-            const registrations = JSON.parse(localStorage.getItem('tiktaktop_registrations') || '[]');
-            registrations.push(data);
-            localStorage.setItem('tiktaktop_registrations', JSON.stringify(registrations));
-            console.log('💾 Data saved to localStorage:', data);
-        } catch (error) {
-            console.error('Error saving to localStorage:', error);
-        }
-    }
-    
-    // Show WhatsApp button after successful registration
-    function showWhatsAppButton(data, memberId) {
-        const formContainer = document.querySelector('.form-section');
-        if (!formContainer) return;
-        
-        // Remove existing button if any
-        const existingButton = document.getElementById('whatsappButton');
-        if (existingButton) {
-            existingButton.remove();
-        }
-        
-        const existingInfo = document.getElementById('whatsappInfo');
-        if (existingInfo) {
-            existingInfo.remove();
-        }
-        
-        // Create WhatsApp message
-        const message = `Halo, saya ${data.nama}.\n\nSaya sudah mendaftar sebagai anggota TikTakTop Course:\n• ID Anggota: ${memberId}\n• Program: ${data.program}\n• WhatsApp: ${data.whatsapp}\n\nMohon info langkah selanjutnya.`;
-        const whatsappUrl = `https://wa.me/${data.whatsapp}?text=${encodeURIComponent(message)}`;
-        
-        // Create info text
-        const info = document.createElement('p');
-        info.id = 'whatsappInfo';
-        info.style.marginTop = '20px';
-        info.style.marginBottom = '10px';
-        info.style.fontSize = '14px';
-        info.style.color = '#28a745';
-        info.innerHTML = '✅ <strong>Pendaftaran berhasil!</strong> Klik tombol di bawah untuk konfirmasi via WhatsApp:';
-        
-        // Create WhatsApp button
-        const button = document.createElement('a');
-        button.id = 'whatsappButton';
-        button.href = whatsappUrl;
-        button.target = '_blank';
-        button.className = 'whatsapp-button';
-        button.style.display = 'inline-flex';
-        button.style.alignItems = 'center';
-        button.style.gap = '10px';
-        button.style.backgroundColor = '#25D366';
-        button.style.color = 'white';
-        button.style.padding = '12px 24px';
-        button.style.borderRadius = '50px';
-        button.style.textDecoration = 'none';
-        button.style.fontWeight = '500';
-        button.style.marginTop = '10px';
-        button.style.transition = 'all 0.3s';
-        button.innerHTML = `
-            <i class="fab fa-whatsapp"></i>
-            <span>Konfirmasi via WhatsApp</span>
-        `;
-        
-        button.addEventListener('mouseenter', () => {
-            button.style.backgroundColor = '#128C7E';
-            button.style.transform = 'translateY(-2px)';
-            button.style.boxShadow = '0 5px 15px rgba(37, 211, 102, 0.3)';
-        });
-        
-        button.addEventListener('mouseleave', () => {
-            button.style.backgroundColor = '#25D366';
-            button.style.transform = 'translateY(0)';
-            button.style.boxShadow = 'none';
-        });
-        
-        // Append to form
-        formContainer.appendChild(info);
-        formContainer.appendChild(button);
-    }
-    
-    // ==================== TEST GOOGLE SHEETS CONNECTION ====================
-    async function testGoogleSheetsConnection() {
-        try {
-            console.log('🔗 Testing Google Sheets connection...');
-            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=test`);
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('✅ Google Sheets API Connected:', data);
-                return true;
-            } else {
-                console.warn('⚠️ Google Sheets connection test failed');
-                return false;
-            }
-        } catch (error) {
-            console.warn('⚠️ Google Sheets connection test error:', error.message);
-            return false;
-        }
-    }
-    
-    // Test connection on page load
-    setTimeout(() => {
-        testGoogleSheetsConnection();
-    }, 1000);
     
     // ==================== ANIMATED COUNTER FOR STATS ====================
     function animateCounter(element, target) {
@@ -888,82 +695,30 @@ document.addEventListener('DOMContentLoaded', function() {
         animateOnScroll.observe(el);
     });
     
-    // ==================== ADMIN FUNCTIONS (DEV TOOLS) ====================
-    // Hanya untuk development - bisa diakses via browser console
-    window.tiktaktopAdmin = {
-        // View localStorage registrations
-        viewRegistrations: function() {
-            const registrations = JSON.parse(localStorage.getItem('tiktaktop_registrations') || '[]');
-            console.log('📋 Local Registrations:', registrations);
-            return registrations;
-        },
+    // ==================== FORM CHAR COUNTER ====================
+    const alamatTextarea = document.getElementById('anggotaAlamat');
+    if (alamatTextarea) {
+        const charCounter = document.createElement('div');
+        charCounter.className = 'char-counter';
+        charCounter.textContent = '0/500 karakter';
+        alamatTextarea.parentNode.appendChild(charCounter);
         
-        // Export localStorage data as CSV
-        exportLocalData: function() {
-            const registrations = this.viewRegistrations();
-            if (registrations.length === 0) {
-                console.log('❌ No data in localStorage');
-                return;
+        alamatTextarea.addEventListener('input', function() {
+            const length = this.value.length;
+            charCounter.textContent = `${length}/500 karakter`;
+            
+            if (length > 450) {
+                charCounter.classList.add('warning');
+            } else {
+                charCounter.classList.remove('warning');
             }
             
-            const headers = ['memberId', 'nama', 'program', 'nik', 'whatsapp', 'timestamp', 'localSaveTime'];
-            const csvRows = [
-                headers.join(','),
-                ...registrations.map(r => headers.map(h => r[h] || '').join(','))
-            ];
-            
-            const csvContent = csvRows.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `tiktaktop_backup_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            console.log('📤 CSV exported with', registrations.length, 'records');
-        },
-        
-        // Clear localStorage
-        clearLocalStorage: function() {
-            localStorage.removeItem('tiktaktop_registrations');
-            console.log('🗑️ localStorage cleared');
-        },
-        
-        // Test Google Sheets connection
-        testConnection: function() {
-            return testGoogleSheetsConnection();
-        },
-        
-        // Simulate form submission
-        testSubmit: function() {
-            const testData = {
-                nama: "Test User",
-                program: "Kelas Dasar Web Development",
-                program_code: "web-dasar",
-                nik: "1234567890123456",
-                alamat: "Jl. Testing No. 123, Jakarta",
-                whatsapp: "6281234567890",
-                timestamp: new Date().toLocaleString('id-ID')
-            };
-            
-            console.log('🧪 Test submission:', testData);
-            
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(testData)
-            })
-            .then(response => response.json())
-            .then(data => console.log('✅ Test response:', data))
-            .catch(error => console.error('❌ Test error:', error));
-        }
-    };
+            if (length > 500) {
+                this.value = this.value.substring(0, 500);
+                charCounter.textContent = '500/500 karakter (maksimum)';
+            }
+        });
+    }
     
     console.log('All scripts initialized successfully');
-    console.log('Google Sheets URL:', GOOGLE_SCRIPT_URL);
-    console.log('Admin tools available: window.tiktaktopAdmin');
 });
