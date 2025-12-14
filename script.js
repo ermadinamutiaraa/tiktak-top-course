@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Tik Tak Top Course Script Loaded');
     
     // ==================== GOOGLE SHEETS CONFIG ====================
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQWiNQqjwir06dK5d26yZoRRS3hJ4KnpgMSZrdU7LOiNx-eyD_7RX-AajutaWW1k4x/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwM77ruQ0maSviqCaffOiWqSje7105u67JOuDotYMQHu7rKHm5GviVafUErTFHfxMaA/exec";
     
     // ==================== MOBILE MENU TOGGLE ====================
     const hamburger = document.getElementById('hamburger');
@@ -280,13 +280,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 try {
                     // Send to Google Sheets via Apps Script
-                    const response = await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(submissionData)
-                    });
+                 const payload = new URLSearchParams();
+payload.append("nama", submissionData.nama);
+payload.append("program", submissionData.program);
+payload.append("nik", submissionData.nik);
+payload.append("alamat", submissionData.alamat);
+payload.append("whatsapp", submissionData.whatsapp);
+
+const response = await fetch(GOOGLE_SCRIPT_URL, {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: payload.toString()
+});
+
+
                     
                     console.log('📥 Response status:', response.status);
                     
