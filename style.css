@@ -117,9 +117,17 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 1.5rem;
     box-shadow: 0 4px 10px rgba(0, 212, 255, 0.3);
+    overflow: hidden;
+}
+
+/* STYLE UNTUK LOGO IMAGE */
+.logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5px;
+    border-radius: 10px;
 }
 
 .logo-text {
@@ -248,25 +256,12 @@ body {
 
 /* Jumbotron */
 .jumbotron {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9)),
-                url('https://www.karier.mu/blog/wp-content/uploads/2021/12/programmin.jpg');
-    background-size: cover;
-    background-position: center;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
     color: white;
     padding: 180px 0 120px;
     text-align: center;
     margin-top: 70px;
     position: relative;
-}
-
-.jumbotron::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
 }
 
 .jumbotron-content {
@@ -282,7 +277,6 @@ body {
     margin-bottom: 20px;
     font-weight: 700;
     line-height: 1.2;
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .jumbotron-subtitle {
@@ -515,7 +509,6 @@ body {
     color: var(--secondary);
     margin-bottom: 5px;
     font-weight: 700;
-    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .stat-item p {
@@ -582,8 +575,6 @@ body {
     border-radius: 15px;
     font-size: 0.75rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .course-badge.new {
@@ -697,7 +688,6 @@ body {
     padding: 30px;
     transition: var(--transition);
     border: 1px solid var(--card-border);
-    height: 100%;
 }
 
 .category-card:hover {
@@ -724,7 +714,6 @@ body {
     color: var(--dark);
     margin-bottom: 20px;
     font-size: 1.3rem;
-    min-height: 40px;
 }
 
 .category-list {
@@ -768,9 +757,6 @@ body {
     text-align: center;
     transition: var(--transition);
     border: 1px solid var(--card-border);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
 }
 
 .service-card:hover {
@@ -797,14 +783,12 @@ body {
     color: var(--dark);
     margin-bottom: 15px;
     font-size: 1.4rem;
-    min-height: 45px;
 }
 
 .service-card > p {
     color: var(--gray);
     margin-bottom: 20px;
     line-height: 1.7;
-    flex-grow: 1;
 }
 
 .service-features {
@@ -827,7 +811,7 @@ body {
     font-size: 0.9rem;
 }
 
-/* Form Pendaftaran Anggota */
+/* Form Pendaftaran */
 .form-container {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -876,26 +860,6 @@ body {
     outline: none;
     border-color: var(--secondary);
     background-color: #333;
-    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
-}
-
-.form-group input.error,
-.form-group select.error,
-.form-group textarea.error {
-    border-color: var(--accent);
-    animation: shake 0.3s ease;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-
-.form-group input.valid,
-.form-group select.valid,
-.form-group textarea.valid {
-    border-color: #27ae60;
 }
 
 .form-hint {
@@ -967,13 +931,6 @@ body {
     box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
 }
 
-.submit-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
 .reset-btn {
     background-color: #333;
     color: var(--dark);
@@ -1016,12 +973,6 @@ body {
     background: rgba(0, 212, 255, 0.05);
     border-radius: 10px;
     border-left: 3px solid var(--secondary);
-    transition: var(--transition);
-}
-
-.benefits-list li:hover {
-    background: rgba(0, 212, 255, 0.1);
-    transform: translateX(5px);
 }
 
 .benefits-list i {
@@ -1137,7 +1088,6 @@ body {
     text-align: center;
     transition: var(--transition);
     border: 1px solid var(--card-border);
-    position: relative;
 }
 
 .achievement-card:hover {
@@ -1164,10 +1114,6 @@ body {
     color: var(--dark);
     margin-bottom: 12px;
     font-size: 1.3rem;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .achievement-card p {
@@ -1385,7 +1331,7 @@ body {
     box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
 }
 
-/* Footer - PERBAIKAN DI SINI */
+/* Footer - DENGAN LOGO */
 .footer {
     background: linear-gradient(135deg, var(--primary-dark), #0a0a0a);
     color: white;
@@ -1400,7 +1346,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px 60px;
-    flex-wrap: wrap; /* Diperbaiki: wrap, bukan nowrap */
+    flex-wrap: wrap;
 }
 
 .footer-section {
@@ -1426,6 +1372,7 @@ body {
     background: var(--secondary);
 }
 
+/* STYLE LOGO DI FOOTER */
 .footer-logo {
     display: flex;
     align-items: center;
@@ -1433,9 +1380,13 @@ body {
     margin-bottom: 20px;
 }
 
-.footer-logo i {
-    font-size: 2.5rem;
-    color: var(--secondary);
+.footer-logo-img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: var(--orange-gradient);
+    padding: 5px;
 }
 
 .footer-logo h3 {
@@ -1528,39 +1479,6 @@ body {
 .footer-bottom i {
     color: var(--accent);
     margin: 0 5px;
-}
-
-/* Animations for elements on scroll */
-.animate {
-    animation: fadeUp 0.6s ease forwards;
-}
-
-@keyframes fadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Additional Fixes */
-.course-tag.selected {
-    background: rgba(0, 212, 255, 0.3);
-    border-color: var(--secondary);
-    font-weight: 600;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Loading spinner */
-.fa-spinner {
-    animation: spin 1s linear infinite;
 }
 
 /* Responsive */
@@ -1707,7 +1625,7 @@ body {
         grid-template-columns: 1fr;
     }
 }
-/* Responsive */
+
 @media (max-width: 576px) {
     .form-buttons {
         flex-direction: column;
@@ -1743,7 +1661,6 @@ body {
 
     .achievement-card h3 {
         min-height: auto;
-        height: auto;
     }
     
     .jumbotron-title {
@@ -1772,10 +1689,6 @@ body {
         font-size: 1rem;
     }
     
-    .form-hint {
-        font-size: 0.8rem;
-    }
-    
     .benefits-list li {
         padding: 12px;
     }
@@ -1789,5 +1702,14 @@ body {
         height: 60px;
         font-size: 1.5rem;
     }
+    
+    /* Logo Responsive */
+    .logo-img {
+        padding: 3px;
+    }
+    
+    .footer-logo-img {
+        width: 50px;
+        height: 50px;
+    }
 }
-/* END OF STYLESHEET */
