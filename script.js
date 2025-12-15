@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Tik Tak Top Course Script Loaded');
     
     // ==================== GOOGLE SHEETS CONFIG ====================
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQWiNQqjwir06dK5d26yZoRRS3hJ4KnpgMSZrdU7LOiNx-eyD_7RX-AajutaWW1k4x/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCzHHuM1VuadviHNwEsgHhGAncQZq7vh26GYg8QpI5Dkfb0MNMEn0fnVbL5ymwJoQayA/exec";
     
     // ==================== MOBILE MENU TOGGLE ====================
     const hamburger = document.getElementById('hamburger');
@@ -269,13 +269,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Prepare data for Google Sheets
                 const programText = document.getElementById('anggotaProgram').options[document.getElementById('anggotaProgram').selectedIndex].text;
                 const submissionData = {
-                    nama: data.nama.trim(),
-                    program: programText,
-                    nik: nikValidation.nik,
-                    alamat: data.alamat.trim(),
-                    whatsapp: formatPhoneNumber(phoneValidation.phone)
-                };
-                
+     anggotaNama: data.nama.trim(),
+        anggotaProgram: programText,
+    anggotaNIK: nikValidation.nik,
+    anggotaAlamat: data.alamat.trim(),
+    anggotaWhatsApp: formatPhoneNumber(phoneValidation.phone)
+};
+
                 console.log('📤 Sending to Google Sheets:', submissionData);
                 
                 try {
