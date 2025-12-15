@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Tik Tak Top Course Script Loaded');
     
     // ==================== GOOGLE SHEETS CONFIG ====================
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwM77ruQ0maSviqCaffOiWqSje7105u67JOuDotYMQHu7rKHm5GviVafUErTFHfxMaA/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvPwgoa9QaoOKTDPUbZdRcyGDHcHHYtjKthHKul2aEHbbPFIeqDmOQ_xqHP6aVKb7VRA/exec";
     
     // ==================== MOBILE MENU TOGGLE ====================
     const hamburger = document.getElementById('hamburger');
@@ -11,46 +12,71 @@ document.addEventListener('DOMContentLoaded', function() {
         hamburger.addEventListener('click', function() {
             navMenu.classList.toggle('active');
             const icon = hamburger.querySelector('i');
-            icon.classList.toggle('fa-bars');
-            icon.classList.toggle('fa-times');
+            
+            if (navMenu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+                hamburger.setAttribute('aria-expanded', 'true');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+                hamburger.setAttribute('aria-expanded', 'false');
+            }
         });
         
-        // Close menu on link click (mobile)
+        // Close mobile menu when clicking a link
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
                 if (window.innerWidth <= 768) {
                     navMenu.classList.remove('active');
                     hamburger.querySelector('i').classList.remove('fa-times');
                     hamburger.querySelector('i').classList.add('fa-bars');
+                    hamburger.setAttribute('aria-expanded', 'false');
                 }
             });
         });
     }
     
-    // ==================== 2. NOTIFICATION ====================
+    // ==================== COURSE SELECTION NOTIFICATION ====================
     const courseNotification = document.getElementById('courseNotification');
     const closeNotification = document.getElementById('closeNotification');
     
     if (courseNotification && closeNotification) {
-        // Show notification after 3 seconds
-        setTimeout(() => {
-            courseNotification.style.display = 'block';
-        }, 3000);
+        let notificationShown = sessionStorage.getItem('notificationShown');
+        
+        if (!notificationShown) {
+            setTimeout(() => {
+                courseNotification.style.display = 'block';
+                courseNotification.setAttribute('aria-hidden', 'false');
+                sessionStorage.setItem('notificationShown', 'true');
+            }, 3000);
+        }
         
         closeNotification.addEventListener('click', () => {
             courseNotification.style.display = 'none';
+            courseNotification.setAttribute('aria-hidden', 'true');
+        });
+        
+        courseNotification.addEventListener('click', (e) => {
+            if (e.target === courseNotification) {
+                courseNotification.style.display = 'none';
+                courseNotification.setAttribute('aria-hidden', 'true');
+            }
         });
     }
     
-    // ==================== 3. COURSE TAGS ====================
+    // ==================== COURSE TAGS SELECTION ====================
     document.querySelectorAll('.course-tag').forEach(tag => {
         tag.addEventListener('click', function() {
+            const course = this.getAttribute('data-course');
+            
+            // Highlight selected tag
             document.querySelectorAll('.course-tag').forEach(t => {
                 t.classList.remove('selected');
             });
             this.classList.add('selected');
             
-            // Scroll to registration after delay
+            // Scroll to registration section
             setTimeout(() => {
                 const registerSection = document.getElementById('register');
                 if (registerSection) {
@@ -60,12 +86,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // ==================== 4. COURSE BUTTONS ====================
+    // ==================== KELAS BUTTON SELECTION ====================
     document.querySelectorAll('.course-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const courseName = this.getAttribute('data-course-name');
+            const coursePrice = this.getAttribute('data-price');
             
-            // Auto-fill program in form
+            // Auto-fill program in registration form
             const programSelect = document.getElementById('anggotaProgram');
             if (programSelect) {
                 for (let option of programSelect.options) {
@@ -76,41 +103,95 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Show message
-            showMessage(`🎉 Kelas "${courseName}" telah dipilih! Silakan lanjutkan pendaftaran.`, 'success');
+            // Show confirmation
+            showResponseMessage(
+                `🎉 Kelas <strong>"${courseName}"</strong> telah dipilih!<br>
+                Harga: <strong>${coursePrice}</strong><br>
+                Silakan lanjutkan pendaftaran di bawah.`,
+                'success'
+            );
             
-            // Scroll to registration
+            // Scroll to registration form
             setTimeout(() => {
                 const registerSection = document.getElementById('register');
                 if (registerSection) {
                     registerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
-            }, 500);
+            }, 300);
         });
     });
     
-    // ==================== 5. FORM VALIDATION ====================
+    // ==================== FORM PENDAFTARAN ANGGOTA ====================
     const registrationForm = document.getElementById('registrationForm');
+    const responseMessage = document.getElementById('responseMessage');
     
-    function showMessage(message, type) {
-        const responseMessage = document.getElementById('responseMessage');
+    function showResponseMessage(message, type) {
         if (responseMessage) {
-            responseMessage.innerHTML = `<strong>${message}</strong>`;
+            responseMessage.innerHTML = message;
             responseMessage.className = `response-message ${type}`;
             responseMessage.style.display = 'block';
+            responseMessage.setAttribute('role', 'alert');
             
-            // Auto hide
+            // Auto hide after 7 seconds
             setTimeout(() => {
-                responseMessage.style.display = 'none';
-            }, 5000);
-        } else {
-            alert(message);
+                if (responseMessage.style.display === 'block') {
+                    responseMessage.style.display = 'none';
+                }
+            }, 7000);
         }
     }
     
+    // Validasi NIK
+    function validateNIK(nik) {
+        const cleanNIK = nik.replace(/\D/g, '');
+        
+        if (cleanNIK.length === 0) {
+            return { valid: false, message: 'NIK tidak boleh kosong' };
+        }
+        
+        if (cleanNIK.length < 5) {
+            return { valid: false, message: 'Nomor induk siswa minimal 5 digit' };
+        }
+        
+        if (cleanNIK.length === 16 && !/^\d+$/.test(cleanNIK)) {
+            return { valid: false, message: 'NIK harus 16 digit angka' };
+        }
+        
+        return { valid: true, nik: cleanNIK };
+    }
+    
+    // Validasi Nomor WhatsApp
+    function validateWhatsApp(phone) {
+        const cleanPhone = phone.replace(/\D/g, '');
+        
+        if (cleanPhone.length === 0) {
+            return { valid: false, message: 'Nomor WhatsApp tidak boleh kosong' };
+        }
+        
+        if (cleanPhone.length < 10 || cleanPhone.length > 14) {
+            return { valid: false, message: 'Nomor WhatsApp harus 10-14 digit' };
+        }
+        
+        return { valid: true, phone: cleanPhone };
+    }
+    
+    // Format nomor untuk WhatsApp
+    function formatPhoneNumber(phone) {
+        const clean = phone.replace(/\D/g, '');
+        if (clean.startsWith('0')) return '62' + clean.substring(1);
+        if (clean.startsWith('62')) return clean;
+        if (clean.startsWith('8')) return '62' + clean;
+        return clean;
+    }
+    
     if (registrationForm) {
-        registrationForm.addEventListener('submit', function(e) {
+        registrationForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Clear previous errors
+            document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(el => {
+                el.classList.remove('error');
+            });
             
             // Get form values
             const formData = new FormData(this);
@@ -123,44 +204,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 terms: document.getElementById('anggotaTerms')?.checked || false
             };
             
-            // Validate
+            // Validate form
             const errors = [];
             
-            if (!data.nama?.trim() || data.nama.length < 3) {
-                errors.push('Nama lengkap minimal 3 karakter');
+            if (!data.nama?.trim()) {
+                errors.push('Nama lengkap harus diisi');
+                document.getElementById('anggotaNama').classList.add('error');
+            } else if (data.nama.length < 3) {
+                errors.push('Nama minimal 3 karakter');
                 document.getElementById('anggotaNama').classList.add('error');
             }
             
             if (!data.program) {
-                errors.push('Pilih program kelas');
+                errors.push('Program kelas harus dipilih');
                 document.getElementById('anggotaProgram').classList.add('error');
             }
             
-            if (!data.nik?.trim() || data.nik.length < 5) {
-                errors.push('NIK/NIS minimal 5 digit');
+            const nikValidation = validateNIK(data.nik);
+            if (!nikValidation.valid) {
+                errors.push(nikValidation.message);
                 document.getElementById('anggotaNIK').classList.add('error');
             }
             
-            if (!data.alamat?.trim() || data.alamat.length < 10) {
-                errors.push('Alamat terlalu pendek');
+            if (!data.alamat?.trim()) {
+                errors.push('Alamat lengkap harus diisi');
+                document.getElementById('anggotaAlamat').classList.add('error');
+            } else if (data.alamat.length < 10) {
+                errors.push('Alamat terlalu pendek, minimal 10 karakter');
                 document.getElementById('anggotaAlamat').classList.add('error');
             }
             
-            if (!data.whatsapp?.trim() || data.whatsapp.length < 10) {
-                errors.push('Nomor WhatsApp tidak valid');
+            const phoneValidation = validateWhatsApp(data.whatsapp);
+            if (!phoneValidation.valid) {
+                errors.push(phoneValidation.message);
                 document.getElementById('anggotaWhatsApp').classList.add('error');
             }
             
             if (!data.terms) {
-                errors.push('Setujui syarat dan ketentuan');
+                errors.push('Anda harus menyetujui syarat dan ketentuan');
             }
             
             if (errors.length > 0) {
-                showMessage(`Perbaiki: ${errors.join(', ')}`, 'error');
+                showResponseMessage(
+                    `<strong>Perbaiki data berikut:</strong><br>• ${errors.join('<br>• ')}`,
+                    'error'
+                );
+                
+                // Scroll to first error
+                const firstError = document.querySelector('.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
                 return;
             }
             
-            // Show loading
+            // Show loading state
             const submitBtn = this.querySelector('.submit-btn');
             if (submitBtn) {
                 const originalText = submitBtn.innerHTML;
@@ -170,34 +269,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Prepare data for Google Sheets
                 const programText = document.getElementById('anggotaProgram').options[document.getElementById('anggotaProgram').selectedIndex].text;
                 const submissionData = {
-                    nama: data.nama.trim(),
-                    program: programText,
-                    nik: nikValidation.nik,
-                    alamat: data.alamat.trim(),
-                    whatsapp: formatPhoneNumber(phoneValidation.phone)
-                };
-                
+     anggotaNama: data.nama.trim(),
+        anggotaProgram: programText,
+    anggotaNIK: nikValidation.nik,
+    anggotaAlamat: data.alamat.trim(),
+    anggotaWhatsApp: formatPhoneNumber(phoneValidation.phone)
+};
+
                 console.log('📤 Sending to Google Sheets:', submissionData);
                 
                 try {
-                    // Send to Google Sheets via Apps Script
-                 const payload = new URLSearchParams();
-payload.append("nama", submissionData.nama);
-payload.append("program", submissionData.program);
-payload.append("nik", submissionData.nik);
-payload.append("alamat", submissionData.alamat);
-payload.append("whatsapp", submissionData.whatsapp);
-
-const response = await fetch(GOOGLE_SCRIPT_URL, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: payload.toString()
+                   fetch("https://script.google.com/macros/s/AKfycbyvPwgoa9QaoOKTDPUbZdRcyGDHcHHYtjKthHKul2aEHbbPFIeqDmOQ_xqHP6aVKb7VRA/exec", {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(submissionData)
 });
 
+showResponseMessage(
+  `✅ <strong>Pendaftaran Berhasil!</strong><br>
+  Data sedang diproses dan akan masuk ke sistem.`,
+  'success'
+);
 
-                    
                     console.log('📥 Response status:', response.status);
                     
                     let result;
