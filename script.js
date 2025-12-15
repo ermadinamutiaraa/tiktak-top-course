@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Tik Tak Top Course Script Loaded');
     
     // ==================== GOOGLE SHEETS CONFIG ====================
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyCzHHuM1VuadviHNwEsgHhGAncQZq7vh26GYg8QpI5Dkfb0MNMEn0fnVbL5ymwJoQayA/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvPwgoa9QaoOKTDPUbZdRcyGDHcHHYtjKthHKul2aEHbbPFIeqDmOQ_xqHP6aVKb7VRA/exec";
     
     // ==================== MOBILE MENU TOGGLE ====================
     const hamburger = document.getElementById('hamburger');
@@ -279,15 +279,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('📤 Sending to Google Sheets:', submissionData);
                 
                 try {
-                    // Send to Google Sheets via Apps Script
-                    const response = await fetch(GOOGLE_SCRIPT_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(submissionData)
-                    });
-                    
+                   fetch("https://script.google.com/macros/s/AKfycbyvPwgoa9QaoOKTDPUbZdRcyGDHcHHYtjKthHKul2aEHbbPFIeqDmOQ_xqHP6aVKb7VRA/exec", {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(submissionData)
+});
+
+showResponseMessage(
+  `✅ <strong>Pendaftaran Berhasil!</strong><br>
+  Data sedang diproses dan akan masuk ke sistem.`,
+  'success'
+);
+
                     console.log('📥 Response status:', response.status);
                     
                     let result;
